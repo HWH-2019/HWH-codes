@@ -6,14 +6,15 @@ using namespace std;
 template<class T>
 class BinTreeNode {
 public:
-	T data;
-	BinTreeNode<T>* leftChild;
-	BinTreeNode<T>* rightChild;
+	T data;							//数据域
+	BinTreeNode<T>* leftChild;		//指针域(左孩子)
+	BinTreeNode<T>* rightChild;		//指针域(右孩子)
 public:
 	BinTreeNode();
 	BinTreeNode(const T& d, BinTreeNode<T>* l = nullptr, BinTreeNode<T>* r = nullptr);
 };
 
+//构造函数
 template<class T>
 BinTreeNode<T>::BinTreeNode() {
 	leftChild = nullptr;
@@ -37,6 +38,8 @@ private:
 	void InOrderN(BinTreeNode<T>* t, void (*visit)(const T& ));	//中序遍历(非递归)
 	void InOrder(BinTreeNode<T>* t, void (*visit)(const T&));	//中序遍历
 	void PostOrder(BinTreeNode<T>* t, void (*visit)(const T&)); //后序遍历
+	int CountNodes(const BinTreeNode<T>* t)const;	//求以t为根的二叉树结点个数
+	int CountLeafNodes(const BinTreeNode<T>* t)const;	//求以t为根的二叉树叶子结点个数
 	int Height(const BinTreeNode<T>* t)const;	//求以t为根的二叉树的高度
 	int Width(BinTreeNode<T>* t)const;	//求以t为根的二叉树的宽度
 	bool CompleteBinTree(BinTreeNode<T>* t) const;	//判断是否为完全二叉树
@@ -50,6 +53,8 @@ public:
 	void InOrderN(void (*visit)(const T& d));	//中序遍历(非递归)
 	void InOrder(void(*visit)(const T& d));		//中序遍历
 	void PostOrder(void(*visit)(const T& d));   //后序遍历
+	int CountNodes() const; //求结点数
+	int CountLeafNodes()const;//求以t为根的二叉树叶子结点个数
 	int Height() const;		//求树高
 	int Width() const;		//求树宽
 	bool CompleteBinTree() const; //判断是否为完全二叉树
@@ -76,17 +81,17 @@ void BinaryTree<T>::PreOrder(BinTreeNode<T>* t, void (*visit)(const T& )) {
 template<class T>
 void BinaryTree<T>::InOrderN(BinTreeNode<T>* t, void (*visit)(const T&)) {
 	if (t != nullptr) {
-		stack<BinTreeNode<T>* > s;
-		BinTreeNode<T>* p = t;
+		stack<BinTreeNode<T>* > s;		//栈(STL)作为辅助空间
+		BinTreeNode<T>* p = t;			//创建p作为辅助指针
 		do {
-			while (p != nullptr) {
+			while (p != nullptr) {		//将树的根和左孩子入栈
 				s.push(p);
 				p = p->leftChild;
 			}
-			p = s.top();
-			s.pop();
-			(*visit)(p->data);
-			p = p->rightChild;
+			p = s.top();				//取栈顶元素
+			s.pop();					//出栈
+			(*visit)(p->data);			//访问栈顶元素的data
+			p = p->rightChild;			//将辅助指针指向该栈顶元素右孩子
 		} while (p != nullptr||!s.empty());
 	}
 }
@@ -110,6 +115,34 @@ void BinaryTree<T>::PostOrder(BinTreeNode<T>* t, void (*visit)(const T&)) {
 		(*visit)(t->data);
 	}
 }
+
+//求以t为根的二叉树的结点个数
+template<class T>
+int BinaryTree<T>::CountNodes(const BinTreeNode<T>* t)const {
+	int count;
+	if (t != nullptr) {
+		count = CountNodes(t->leftChild) + CountNodes(t->rightChild) + 1;
+	}
+	else {
+		return 0;
+	}
+	return count;
+}
+
+//求以t为根的二叉树叶子结点个数
+template<class T>
+int BinaryTree<T>::CountLeafNodes(const BinTreeNode<T>* t)const {
+	if (!t) {
+		return 0;
+	}
+	else if (t->leftChild == nullptr && t->rightChild == nullptr) {
+		return 1;
+	}
+	else {
+		return CountLeafNodes(t->leftChild) + CountLeafNodes(t->rightChild);
+	}
+}
+
 
 //求以t为根的二叉树的高度
 template<class T>
@@ -138,7 +171,7 @@ int BinaryTree<T>::Width(BinTreeNode<T>* t)const {
 		int temp = 0;	//记录树的每一层的个数
 		int tag = 1;	//记录树的每一层的个数(从第二层开始)
 
-		p.push(t);		//将根节点入队
+		p.push(t);		//将根结点入队
 		q = p.front();	//取出队头
 		for (int i = 1; i <= tag && q != nullptr; i++) {
 			q = p.front();	//取出队头
@@ -243,6 +276,18 @@ void BinaryTree<T>::PostOrder(void (*visit)(const T& d)) {
 	PostOrder(root, visit);
 }
 
+//求树的结点个数
+template<class T>
+int BinaryTree<T>::CountNodes()const {
+	return CountNodes(root);
+}
+
+//求树的叶子结点个数
+template<class T>
+int BinaryTree<T>::CountLeafNodes()const {
+	return CountLeafNodes(root);
+}
+
 //求树的高度
 template<class T>
 int BinaryTree<T>::Height()const {
@@ -255,6 +300,7 @@ int BinaryTree<T>::Width()const {
 	return Width(root);
 }
 
+//判断是否是完全二叉树
 template<class T>
 bool BinaryTree<T>::CompleteBinTree() const {
 	return CompleteBinTree(root);
@@ -275,6 +321,8 @@ int main() {
 	cout << endl;
 	BinTree.PostOrder(show);
 	cout << endl;
+	cout << "树的结点个数：" << BinTree.CountNodes() << endl;
+	cout << "树的叶子结点个数：" << BinTree.CountLeafNodes() << endl;
 	cout << "树的高度：" << BinTree.Height() << endl;
 	if (BinTree.CompleteBinTree()) {
 		cout << "是完全二叉树" << endl;
