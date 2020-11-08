@@ -22,7 +22,7 @@ BinTreeNode<T>::BinTreeNode() {
 }
 
 template<class T>
-BinTreeNode<T>::BinTreeNode(const T& d, BinTreeNode<T>* l , BinTreeNode<T>* r) {
+BinTreeNode<T>::BinTreeNode(const T& d, BinTreeNode<T>* l, BinTreeNode<T>* r) {
 	data = d;
 	leftChild = l;
 	rightChild = r;
@@ -34,8 +34,8 @@ private:
 	BinTreeNode<T>* root;
 	//辅助函数
 	BinTreeNode<T>* CopyTree(BinTreeNode<T>* t);	//复制二叉树
-	void PreOrder(BinTreeNode<T>* t, void (*visit)(const T& ));	//先序遍历
-	void InOrderN(BinTreeNode<T>* t, void (*visit)(const T& ));	//中序遍历(非递归)
+	void PreOrder(BinTreeNode<T>* t, void (*visit)(const T&));	//先序遍历
+	void InOrderN(BinTreeNode<T>* t, void (*visit)(const T&));	//中序遍历(非递归)
 	void InOrder(BinTreeNode<T>* t, void (*visit)(const T&));	//中序遍历
 	void PostOrder(BinTreeNode<T>* t, void (*visit)(const T&)); //后序遍历
 	int CountNodes(const BinTreeNode<T>* t)const;	//求以t为根的二叉树结点个数
@@ -43,6 +43,7 @@ private:
 	int Height(const BinTreeNode<T>* t)const;	//求以t为根的二叉树的高度
 	int Width(BinTreeNode<T>* t)const;	//求以t为根的二叉树的宽度
 	bool CompleteBinTree(BinTreeNode<T>* t) const;	//判断是否为完全二叉树
+	BinTreeNode<T>* Parent(BinTreeNode<T>* t, BinTreeNode<T>* p);	//求以t为根的二叉树中p的双亲
 public:
 	//成员函数
 	BinaryTree();
@@ -58,7 +59,10 @@ public:
 	int Height() const;		//求树高
 	int Width() const;		//求树宽
 	bool CompleteBinTree() const; //判断是否为完全二叉树
-};
+	BinTreeNode<T>* Parent(BinTreeNode<T>* p) ;	//求以t为根的二叉树中p的双亲
+	void InsertLeftChild(BinTreeNode<T>* p, const T& d); //插入左子树
+
+}; 
 
 
 //辅助函数
@@ -69,10 +73,10 @@ BinTreeNode<T>* BinaryTree<T>::CopyTree(BinTreeNode<T>* t) {
 
 //先序遍历
 template<class T>
-void BinaryTree<T>::PreOrder(BinTreeNode<T>* t, void (*visit)(const T& )) {
+void BinaryTree<T>::PreOrder(BinTreeNode<T>* t, void (*visit)(const T&)) {
 	if (t != nullptr) {
 		(*visit)(t->data);
-		PreOrder(t->leftChild,visit);
+		PreOrder(t->leftChild, visit);
 		PreOrder(t->rightChild, visit);
 	}
 }
@@ -92,7 +96,7 @@ void BinaryTree<T>::InOrderN(BinTreeNode<T>* t, void (*visit)(const T&)) {
 			s.pop();					//出栈
 			(*visit)(p->data);			//访问栈顶元素的data
 			p = p->rightChild;			//将辅助指针指向该栈顶元素右孩子
-		} while (p != nullptr||!s.empty());
+		} while (p != nullptr || !s.empty());
 	}
 }
 
@@ -213,11 +217,30 @@ bool BinaryTree<T>::CompleteBinTree(BinTreeNode<T>* t) const {
 			p.push(q->rightChild);
 		}
 		while (!p.empty()) {
-			q=p.front();
+			q = p.front();
 			if (q) return false;
 			p.pop();
 		}
 		return true;
+	}
+}
+
+//求以t为根的二叉树中p的双亲
+template<class T>
+BinTreeNode<T>* BinaryTree<T>::Parent(BinTreeNode<T>* t, BinTreeNode<T>* p) {
+	if (!t) {
+		return nullptr;
+	}
+	else if (t->leftChild == p || t->rightChild == p) {
+		return t;
+	}
+	else {
+		BinTreeNode<T>* q;
+		q = Parent(t->leftChild, p);
+		if (q) return q;
+		q = Parent(t->rightChild, p);
+		if (q) return q;
+		else return nullptr;
 	}
 }
 
@@ -306,6 +329,24 @@ bool BinaryTree<T>::CompleteBinTree() const {
 	return CompleteBinTree(root);
 }
 
+//求以t为根的二叉树中p的双亲
+template<class T>
+BinTreeNode<T>* BinaryTree<T>::Parent(BinTreeNode<T>* p) {
+	return Parent(root, p);
+}
+
+//插入左子树
+template<class T>
+void BinaryTree<T>::InsertLeftChild(BinTreeNode<T>* p, const T& d) {
+	
+	if (p) {
+		BinTreeNode<T>* Child = new BinTreeNode<T>(d);
+		if (p->leftChild) Child->leftChild = p->leftChild;
+		p->leftChild = Child;
+	}
+}
+
+//模板函数
 template<class T>
 void show(const T& d) {
 	cout << d << " ";
